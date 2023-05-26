@@ -64,10 +64,16 @@ def check_proxy(proxy, num_tests=3):
 def main():
     st.title('Proxy Server Speed Checker')
     uploaded_file = st.file_uploader("Choose a .txt file", type="txt")
+    input_proxies = st.text_area("Or paste your proxies here")
     download_speed_threshold = st.number_input('Enter minimum average download speed (MB/s)', min_value=0.0, value=1.0)
     
+    proxies = []
     if uploaded_file is not None:
         proxies = load_proxies(uploaded_file)
+    elif input_proxies != "":
+        proxies = input_proxies.splitlines()
+
+    if proxies:
         data = []
         successful_proxies = []
         with ThreadPoolExecutor(max_workers=10) as executor:
@@ -87,6 +93,7 @@ def main():
 
         df = pd.DataFrame(data, columns=['Proxy', 'Avg Ping (s)', 'Avg Download Speed (MB/s)', 'Status'])
         st.write(df)
+
 
 if __name__ == "__main__":
     main()
