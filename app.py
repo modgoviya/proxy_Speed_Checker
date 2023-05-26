@@ -1,6 +1,6 @@
 import time
 import datetime
-import psutil
+#import psutil
 import requests
 import socket
 import json
@@ -21,19 +21,38 @@ def get_public_ip():
         logging.error(f"Failed to get public IP: {e}")
         return None
 
-def get_interface_name():
-    wifi_interface = None
-    for name, addrs in psutil.net_if_addrs().items():
-        for addr in addrs:
-            if addr.family == socket.AF_INET:
-                if name.startswith("lo") or name.startswith("vmnet") or name.startswith("vEthernet"):
-                    continue
-                if name.startswith("wlan") or name.startswith("Wi-Fi"):
-                    wifi_interface = name
-                else:
-                    return name
+# def get_interface_name():
+    # wifi_interface = None
+    # for name, addrs in psutil.net_if_addrs().items():
+        # for addr in addrs:
+            # if addr.family == socket.AF_INET:
+                # if name.startswith("lo") or name.startswith("vmnet") or name.startswith("vEthernet"):
+                    # continue
+                # if name.startswith("wlan") or name.startswith("Wi-Fi"):
+                    # wifi_interface = name
+                # else:
+                    # return name
 
-    return wifi_interface or None
+    # return wifi_interface or None
+def get_interface_name():
+    try:
+        host_name = socket.gethostname()
+        host_ip = socket.gethostbyname(host_name)
+        socket_info = socket.getaddrinfo(host_ip, None)
+
+        for info in socket_info:
+            if info[0] == socket.AF_INET:
+                interface_name = info[4][0]
+
+                if interface_name.startswith("lo") or interface_name.startswith("vmnet") or interface_name.startswith("vEthernet"):
+                    continue
+                if interface_name.startswith("wlan") or interface_name.startswith("Wi-Fi"):
+                    return interface_name
+                else:
+                    return interface_name
+    except Exception as e:
+        logging.error(f"Failed to get interface name: {e}")
+        return None
 
 def get_ssid(interface_name):
     try:
